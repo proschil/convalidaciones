@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convalidaciones de Unidades de Competencia</title>
+    <style>
+        :root {
+            --color-verde: #2E8B57;
+            --color-azul: #4682B4;
+            --color-naranja: #FF8C42;
+            --color-borde: #e0e0e0;
+            --color-fondo: #f5f5f5;
+            --color-header: #f0f0f0;
+            --color-seleccionado: #e8f4ff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+        
+        .selector-container {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: var(--color-fondo);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .selector-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        #familia-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: white;
+        }
+        
+        .container-flex {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 868px) {
+            .container-flex {
+                flex-direction: column;
+            }
+            
+            .panel {
+                width: 100% !important;
+            }
+        }
+        
+        .panel {
+            background-color: var(--color-fondo);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .panel-left {
+            width: 40%;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .panel-right {
+            width: 60%;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .panel-left h2 {
+            color: var(--color-verde);
+        }
+        
+        .panel-right h2 {
+            color: var(--color-azul);
+        }
+        
+        .uc-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .uc-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--color-borde);
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .uc-item:last-child {
+            border-bottom: none;
+        }
+        
+        .uc-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .uc-checkbox {
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+        
+        .uc-label {
+            flex: 1;
+            cursor: pointer;
+        }
+        
+        .uc-code {
+            font-weight: bold;
+            color: var(--color-azul);
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .resultados {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        thead {
+            background-color: var(--color-header);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid var(--color-borde);
+        }
+        
+        th {
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        th.col-mp-code, th.col-mp-name {
+            color: var(--color-verde);
+        }
+        
+        th.col-ciclo {
+            color: var(--color-naranja);
+        }
+        
+        td.col-mp-code {
+            text-align: center;
+            width: 80px;
+            font-weight: bold;
+        }
+        
+        td.col-mp-name, td.col-ciclo {
+            text-align: left;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .selected-row {
+            background-color: var(--color-seleccionado);
+        }
+        
+        .aviso-requerido {
+            color: #d9534f;
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+        
+        .btn-limpiar {
+            background-color: var(--color-naranja);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .btn-limpiar:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        
+        .counter {
+            background-color: var(--color-azul);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+        
+        .status-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* Estilos para el buscador de UCs */
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 35px 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background-color: white;
+        }
+        
+        .search-input:focus {
+            border-color: var(--color-azul);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(70, 130, 180, 0.25);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+            font-size: 1rem;
+        }
+        
+        .search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+            font-size: 1rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            display: none;
+        }
+        
+        .search-clear:hover {
+            color: #333;
+        }
+        
+        .highlight {
+            background-color: #fffacd;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Convalidaciones de Unidades de Competencia</h1>
+        
+        <div class="selector-container">
+            <label for="familia-select" class="selector-label">Seleccione una familia profesional:</label>
+            <select id="familia-select">
+                <option value="">-- Seleccione una familia profesional --</option>
+                <!-- Las opciones se cargarán dinámicamente desde el JS -->
+            </select>
+        </div>
+        
+        <div class="container-flex">
+            <!-- Panel izquierdo - Unidades de Competencia -->
+            <div class="panel panel-left">
+                <div class="status-info">
+                    <h2>Unidades de Competencia Acreditadas</h2>
+                    <span id="contador-seleccionadas" class="counter">0</span>
+                </div>
+                
+                <div class="btn-container">
+                    <button id="btn-limpiar" class="btn-limpiar" style="display: none;">Limpiar selección</button>
+                </div>
+                
+                <!-- Buscador de UCs -->
+                <div class="search-container">
+                    <input type="text" id="search-uc" class="search-input" placeholder="Buscar por código de UC..." aria-label="Buscar unidades de competencia">
+                    <span class="search-icon">🔍</span>
+                    <button id="search-clear" class="search-clear" aria-label="Limpiar búsqueda">✕</button>
+                </div>
+                
+                <ul id="uc-list" class="uc-list">
+                    <li class="no-data">Seleccione una familia profesional para ver las unidades de competencia</li>
+                </ul>
+            </div>
+            
+            <!-- Panel derecho - Módulos Profesionales -->
+            <div class="panel panel-right">
+                <h2>Módulos Profesionales Convalidables</h2>
+                <div class="resultados">
+                    <table id="tabla-convalidaciones">
+                        <thead>
+                            <tr>
+                                <th class="col-mp-code">Código</th>
+                                <th class="col-mp-name">Módulo Profesional</th>
+                                <th class="col-ciclo">Ciclo Formativo (Grado D)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-body">
+                            <tr>
+                                <td colspan="3" class="no-data">Seleccione unidades de competencia para ver los módulos convalidables</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos globales
+        let ucData = [];
+        let ucPorFamilia = {};
+        let modulosPorUC = {};
+        let modulosConRequisitosMultiples = {};
+        
+        // Función para cargar el CSV
+        function cargarCSV() {
+            // En un entorno real, esto cargaría el archivo CSV
+            // Por ahora, usamos datos de ejemplo
+            
+            // Simulamos la carga del CSV
+            fetch('UC_MP.csv')
+                .then(response => response.text())
+                .then(text => {
+                    procesarDatosCSV(text);
+                })
+                .catch(error => {
+                    console.error('Error al cargar el CSV:', error);
+                    // Cargar datos de ejemplo si falla la carga del CSV
+                    cargarDatosEjemplo();
+                });
+        }
+        
+        // Procesa los datos del CSV
+        function procesarDatosCSV(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length <= 1) {
+                cargarDatosEjemplo();
+                return;
+            }
+            
+            // Asumimos que la estructura es: 
+            // Familia profesional, Grado D, Code_UC, Name_UC, Code_MP, Name_MP
+            
+            // Procesamos los datos
+            const datos = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue; // Salta líneas vacías
+                
+                // Dividimos por comas pero respetando comas dentro de comillas
+                const valores = parsearCSV(lines[i]);
+                
+                if (valores.length !== 6) continue; // Aseguramos que tenga todas las columnas
+                
+                const registro = {
+                    "Familia profesional": valores[0].trim(),
+                    "Grado D": valores[1].trim(),
+                    "Code_UC": valores[2].trim(),
+                    "Name_UC": valores[3].trim(),
+                    "Code_MP": valores[4].trim(),
+                    "Name_MP": valores[5].trim()
+                };
+                
+                datos.push(registro);
+            }
+            
+            // Si no hay datos, cargamos los de ejemplo
+            if (datos.length === 0) {
+                cargarDatosEjemplo();
+                return;
+            }
+            
+            procesarDatos(datos);
+        }
+        
+        // Función para parsear CSV respetando comillas
+        function parsearCSV(text) {
+            const result = [];
+            let cell = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(cell);
+                    cell = '';
+                } else {
+                    cell += char;
+                }
+            }
+            
+            // Añadir la última celda
+            result.push(cell);
+            
+            return result;
+        }
+        
+        // Carga datos de ejemplo en caso de error con el CSV
+        function cargarDatosEjemplo() {
+            const datos = [
+                {
+                    "Familia profesional": "Administración y Gestión",
+                    "Grado D": "Técnico Superior en Administración y Finanzas",
+                    "Code_UC": "UC0988_3",
+                    "Name_UC": "Preparar y presentar expedientes y documentación jurídica y empresarial ante Organismos y Administraciones Públicas.",
+                    "Code_MP": "0647",
+                    "Name_MP": "Gestión de la documentación jurídica y empresarial."
+                },
+                {
+                    "Familia profesional": "Administración y Gestión",
+                    "Grado D": "Técnico Superior en Administración y Finanzas",
+                    "Code_UC": "UC0238_3",
+                    "Name_UC": "Realizar el apoyo administrativo a las tareas de selección, formación y desarrollo de recursos humanos.",
+                    "Code_MP": "0652",
+                    "Name_MP": "Gestión de recursos humanos."
+                },
+                {
+                    "Familia profesional": "Administración y Gestión",
+                    "Grado D": "Técnico Superior en Administración y Finanzas",
+                    "Code_UC": "UC0237_3",
+                    "Name_UC": "Realizar la gestión y control administrativo de recursos humanos.",
+                    "Code_MP": "0652",
+                    "Name_MP": "Gestión de recursos humanos."
+                },
+                {
+                    "Familia profesional": "Administración y Gestión",
+                    "Grado D": "Técnico Superior en Asistencia a la Dirección",
+                    "Code_UC": "UC0988_3",
+                    "Name_UC": "Preparar y presentar expedientes y documentación jurídica y empresarial ante Organismos y Administraciones Públicas.",
+                    "Code_MP": "0647",
+                    "Name_MP": "Gestión de la documentación jurídica y empresarial."
+                },
+                {
+                    "Familia profesional": "Informática y Comunicaciones",
+                    "Grado D": "Técnico Superior en Desarrollo de Aplicaciones Web",
+                    "Code_UC": "UC0223_3",
+                    "Name_UC": "Configurar y explotar sistemas informáticos.",
+                    "Code_MP": "0483",
+                    "Name_MP": "Sistemas informáticos."
+                },
+                {
+                    "Familia profesional": "Informática y Comunicaciones",
+                    "Grado D": "Técnico Superior en Desarrollo de Aplicaciones Web",
+                    "Code_UC": "UC0226_3",
+                    "Name_UC": "Programar bases de datos relacionales.",
+                    "Code_MP": "0484",
+                    "Name_MP": "Bases de Datos."
+                },
+                {
+                    "Familia profesional": "Hostelería y Turismo",
+                    "Grado D": "Técnico en Cocina y Gastronomía",
+                    "Code_UC": "UC0711_2",
+                    "Name_UC": "Actuar bajo normas de seguridad, higiene y protección ambiental en hostelería.",
+                    "Code_MP": "0031",
+                    "Name_MP": "Seguridad e higiene en la manipulación de alimentos."
+                },
+                {
+                    "Familia profesional": "Hostelería y Turismo",
+                    "Grado D": "Técnico en Cocina y Gastronomía",
+                    "Code_UC": "UC0259_2",
+                    "Name_UC": "Definir ofertas gastronómicas sencillas, realizar el aprovisionamiento y controlar consumos.",
+                    "Code_MP": "0045",
+                    "Name_MP": "Ofertas gastronómicas."
+                }
+            ];
+            
+            procesarDatos(datos);
+        }
+
+        // Procesa los datos y prepara estructuras para la aplicación
+        function procesarDatos(datos) {
+            ucData = datos;
+            
+            // Organizar UCs por familia profesional
+            ucPorFamilia = {};
+            const familiasSet = new Set();
+            
+            // Identificamos módulos que requieren múltiples UCs
+            const modulosConteo = {};
+            
+            datos.forEach(item => {
+                const familia = item["Familia profesional"];
+                const codeUC = item["Code_UC"];
+                const nameUC = item["Name_UC"];
+                const codeMP = item["Code_MP"];
+                const nameMP = item["Name_MP"];
+                const gradoD = item["Grado D"];
+                
+                // Registrar familia
+                familiasSet.add(familia);
+                
+                // Registrar UC bajo su familia
+                if (!ucPorFamilia[familia]) {
+                    ucPorFamilia[familia] = new Map();
+                }
+                
+                const ucKey = codeUC + " - " + nameUC;
+                ucPorFamilia[familia].set(ucKey, {
+                    code: codeUC,
+                    name: nameUC
+                });
+                
+                // Contar ocurrencias de MP para detectar los que requieren múltiples UCs
+                const mpKey = codeMP + " - " + nameMP + " @ " + gradoD;
+                if (!modulosConteo[mpKey]) {
+                    modulosConteo[mpKey] = { count: 0, ucs: [] };
+                }
+                modulosConteo[mpKey].count++;
+                modulosConteo[mpKey].ucs.push(codeUC);
+                
+                // Asociar UCs con MPs
+                if (!modulosPorUC[codeUC]) {
+                    modulosPorUC[codeUC] = [];
+                }
+                
+                // Verificar si esta combinación ya está en el array
+                const existente = modulosPorUC[codeUC].find(m => 
+                    m.codeMP === codeMP && 
+                    m.nameMP === nameMP && 
+                    m.gradoD === gradoD
+                );
+                
+                if (!existente) {
+                    modulosPorUC[codeUC].push({
+                        codeMP,
+                        nameMP,
+                        gradoD
+                    });
+                }
+            });
+            
+            // Identificar módulos que requieren múltiples UCs
+            modulosConRequisitosMultiples = {};
+            
+            for (const [mpKey, info] of Object.entries(modulosConteo)) {
+                if (info.count > 1) {
+                    const [mpInfo, gradoD] = mpKey.split(" @ ");
+                    const [codeMP, nameMP] = mpInfo.split(" - ", 2);
+                    
+                    modulosConRequisitosMultiples[mpKey] = {
+                        codeMP,
+                        nameMP,
+                        gradoD,
+                        ucsRequeridas: info.ucs
+                    };
+                }
+            }
+            
+            // Cargar familias en el select
+            cargarFamilias([...familiasSet].sort());
+        }
+        
+        // Carga las familias profesionales en el selector
+        function cargarFamilias(familias) {
+            const selectFamilia = document.getElementById('familia-select');
+            
+            familias.forEach(familia => {
+                const option = document.createElement('option');
+                option.value = familia;
+                option.textContent = familia;
+                selectFamilia.appendChild(option);
+            });
+        }
+        
+        // Carga las UCs de la familia seleccionada
+        function cargarUnidadesCompetencia(familia) {
+            const ucList = document.getElementById('uc-list');
+            ucList.innerHTML = '';
+            
+            const btnLimpiar = document.getElementById('btn-limpiar');
+            const searchInput = document.getElementById('search-uc');
+            searchInput.value = '';
+            document.getElementById('search-clear').style.display = 'none';
+            
+            if (!familia || !ucPorFamilia[familia] || ucPorFamilia[familia].size === 0) {
+                ucList.innerHTML = '<li class="no-data">No hay unidades de competencia disponibles para esta familia profesional</li>';
+                btnLimpiar.style.display = 'none';
+                return;
+            }
+            
+            btnLimpiar.style.display = 'block';
+            
+            // Ordenar las UCs por código
+            const ucsOrdenadas = [...ucPorFamilia[familia]].sort((a, b) => {
+                return a[1].code.localeCompare(b[1].code);
+            });
+            
+            ucsOrdenadas.forEach(([ucKey, ucData]) => {
+                const li = document.createElement('li');
+                li.className = 'uc-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'uc-checkbox';
+                checkbox.id = 'uc-' + ucData.code;
+                checkbox.dataset.ucCode = ucData.code;
+                checkbox.addEventListener('change', () => {
+                    actualizarConvalidaciones();
+                    actualizarContador();
+                });
+                
+                const label = document.createElement('label');
+                label.className = 'uc-label';
+                label.htmlFor = 'uc-' + ucData.code;
+                
+                const codeSpan = document.createElement('span');
+                codeSpan.className = 'uc-code';
+                codeSpan.textContent = ucData.code;
+                
+                label.appendChild(codeSpan);
+                label.appendChild(document.createTextNode(ucData.name));
+                
+                li.appendChild(checkbox);
+                li.appendChild(label);
+                
+                // Añadir atributos para búsqueda
+                li.dataset.code = ucData.code.toLowerCase();
+                li.dataset.name = ucData.name.toLowerCase();
+                
+                ucList.appendChild(li);
+            });
+            
+            actualizarContador();
+        }
+        
+        // Actualiza el contador de UCs seleccionadas
+        function actualizarContador() {
+            const contador = document.getElementById('contador-seleccionadas');
+            const seleccionadas = document.querySelectorAll('.uc-checkbox:checked').length;
+            contador.textContent = seleccionadas;
+        }
+        
+        // Actualiza la tabla de convalidaciones basado en las UCs seleccionadas
+        function actualizarConvalidaciones() {
+            const ucSeleccionadas = [];
+            document.querySelectorAll('.uc-checkbox:checked').forEach(checkbox => {
+                ucSeleccionadas.push(checkbox.dataset.ucCode);
+            });
+            
+            const tablaBody = document.getElementById('tabla-body');
+            tablaBody.innerHTML = '';
+            
+            if (ucSeleccionadas.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="3" class="no-data">Seleccione unidades de competencia para ver los módulos convalidables</td></tr>';
+                return;
+            }
+            
+            // Obtener módulos convalidables directamente
+            const modulosDirectos = new Set();
+            
+            ucSeleccionadas.forEach(ucCode => {
+                if (modulosPorUC[ucCode]) {
+                    modulosPorUC[ucCode].forEach(modulo => {
+                        // Clave única para este módulo en este ciclo formativo
+                        const moduloKey = `${modulo.codeMP} - ${modulo.nameMP} @ ${modulo.gradoD}`;
+                        modulosDirectos.add(JSON.stringify({
+                            codeMP: modulo.codeMP,
+                            nameMP: modulo.nameMP,
+                            gradoD: modulo.gradoD,
+                            key: moduloKey,
+                            completo: true // Por defecto es convalidable directamente
+                        }));
+                    });
+                }
+            });
+            
+            // Verificar los módulos que requieren múltiples UCs
+            for (const [mpKey, mpInfo] of Object.entries(modulosConRequisitosMultiples)) {
+                const tieneTodasUCs = mpInfo.ucsRequeridas.every(uc => ucSeleccionadas.includes(uc));
+                const tieneParcialUCs = mpInfo.ucsRequeridas.some(uc => ucSeleccionadas.includes(uc));
+                
+                // Eliminar entradas individuales si existe un módulo con múltiples requisitos
+                if (tieneParcialUCs) {
+                    modulosDirectos.forEach(moduloJson => {
+                        const modulo = JSON.parse(moduloJson);
+                        if (modulo.key === mpKey) {
+                            modulosDirectos.delete(moduloJson);
+                        }
+                    });
+                    
+                    // Añadir el módulo con estado completo/incompleto
+                    modulosDirectos.add(JSON.stringify({
+                        codeMP: mpInfo.codeMP,
+                        nameMP: mpInfo.nameMP,
+                        gradoD: mpInfo.gradoD,
+                        key: mpKey,
+                        completo: tieneTodasUCs,
+                        faltanUCs: tieneTodasUCs ? [] : mpInfo.ucsRequeridas.filter(uc => !ucSeleccionadas.includes(uc))
+                    }));
+                }
+            }
+            
+            // Mostrar resultados
+            const modulosArray = [...modulosDirectos].map(m => JSON.parse(m));
+            
+            if (modulosArray.length === 0) {
+                tablaBody.innerHTML = '<tr><td colspan="3" class="no-data">No hay módulos convalidables con las unidades de competencia seleccionadas</td></tr>';
+                return;
+            }
+            
+            // Ordenar por grado y código de módulo
+            modulosArray.sort((a, b) => {
+                if (a.gradoD !== b.gradoD) {
+                    return a.gradoD.localeCompare(b.gradoD);
+                }
+                return a.codeMP.localeCompare(b.codeMP);
+            });
+            
+            modulosArray.forEach(modulo => {
+                const row = document.createElement('tr');
+                if (!modulo.completo) {
+                    row.className = 'selected-row';
+                }
+                
+                // Código MP
+                const colCodigo = document.createElement('td');
+                colCodigo.textContent = modulo.codeMP;
+                colCodigo.className = 'col-mp-code';
+                row.appendChild(colCodigo);
+                
+                // Nombre MP
+                const colNombre = document.createElement('td');
+                colNombre.className = 'col-mp-name';
+                colNombre.textContent = modulo.nameMP;
+                
+                // Si no está completo, mostrar aviso
+                if (!modulo.completo && modulo.faltanUCs && modulo.faltanUCs.length > 0) {
+                    const aviso = document.createElement('div');
+                    aviso.className = 'aviso-requerido';
+                    aviso.textContent = `Requiere acreditar también: ${modulo.faltanUCs.join(', ')}`;
+                    colNombre.appendChild(aviso);
+                }
+                
+                row.appendChild(colNombre);
+                
+                // Ciclo formativo
+                const colCiclo = document.createElement('td');
+                colCiclo.textContent = modulo.gradoD;
+                colCiclo.className = 'col-ciclo';
+                row.appendChild(colCiclo);
+                
+                tablaBody.appendChild(row);
+            });
+        }
+        
+        // Función para filtrar las UCs solo por código (simplificada)
+        function filtrarUCs(texto) {
+            const items = document.querySelectorAll('.uc-item');
+            const searchText = texto.toLowerCase().trim();
+            let encontrado = false;
+            
+            // Limpiar mensaje de "no se encontraron resultados" si existe
+            const ucList = document.getElementById('uc-list');
+            const noDataMsg = ucList.querySelector('.no-data');
+            if (noDataMsg) {
+                noDataMsg.remove();
+            }
+            
+            // Si no hay texto de búsqueda, mostrar todas las UCs
+            if (!searchText) {
+                items.forEach(item => {
+                    item.classList.remove('hidden');
+                });
+                return;
+            }
+            
+            // Filtrar solo por código de UC
+            items.forEach(item => {
+                const codeElement = item.querySelector('.uc-code');
+                const code = codeElement.textContent.toLowerCase();
+                
+                if (code.includes(searchText)) {
+                    item.classList.remove('hidden');
+                    encontrado = true;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            
+            // Mostrar mensaje si no hay resultados
+            if (!encontrado && searchText) {
+                const li = document.createElement('li');
+                li.className = 'no-data';
+                li.textContent = `No se encontraron códigos de UC con "${texto}"`;
+                ucList.appendChild(li);
+            }
+        }
+        
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarCSV();
+            
+            // Evento de cambio en el selector de familia
+            document.getElementById('familia-select').addEventListener('change', (e) => {
+                cargarUnidadesCompetencia(e.target.value);
+                actualizarConvalidaciones();
+            });
+            
+            // Evento para limpiar selección
+            document.getElementById('btn-limpiar').addEventListener('click', () => {
+                document.querySelectorAll('.uc-checkbox:checked').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                actualizarConvalidaciones();
+                actualizarContador();
+            });
+            
+            // Evento para búsqueda de UCs
+            const searchInput = document.getElementById('search-uc');
+            const searchClear = document.getElementById('search-clear');
+            
+            searchInput.addEventListener('input', function() {
+                const texto = this.value;
+                filtrarUCs(texto);
+                
+                // Mostrar/ocultar botón de limpiar
+                if (texto) {
+                    searchClear.style.display = 'block';
+                } else {
+                    searchClear.style.display = 'none';
+                }
+            });
+            
+            // Evento para limpiar búsqueda
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                filtrarUCs('');
+                searchClear.style.display = 'none';
+                searchInput.focus();
+            });
+            
+            // Evento para enfocar el buscador con Ctrl+F
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
