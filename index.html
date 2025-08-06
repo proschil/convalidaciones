@@ -205,9 +205,17 @@
             font-size: 0.875rem;
         }
 
-        .results-table tr:hover {
-            background-color: #f8fafc;
-        }
+        .results-table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.results-table tr:nth-child(odd) {
+    background-color: white;
+}
+
+.results-table tr:hover {
+    background-color: #f1f5f9 !important;
+}
 
         .familia-cell {
             font-weight: 500;
@@ -239,6 +247,7 @@
             color: #7c3aed;
             font-weight: 500;
             min-width: 200px;
+            white-space: pre-line;
         }
 
         .no-results {
